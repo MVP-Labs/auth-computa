@@ -6,8 +6,10 @@
 
 ## 运行流程
 
+```
 $ git clone https://github.com/ownership-labs/dt-asset
 $ cd dt-asset
 $ export PYTHONPATH=$PYTHONPATH:"../dt_asset
 $ pip install -r requirements.txt
 $ python tests/test.py
+```
