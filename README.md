@@ -22,7 +22,7 @@ $ python tests/test.py
 
 我们的系统考虑了部分满足关系，除了触发实际计算的顶层算法CDT外，任一下层组合CDT或叶子DT都无需满足所有的约束条款。通过这样的设计，我们希望在未来有交易对手方根据历史信息来自动寻找最优参数，从而实现自主经济代理。
 
-链上可信算子及其参数约束：
+### 可信算子及参数约束：
 
 add operator:
 ```
@@ -48,8 +48,11 @@ params.json:
     "arg2": {}
 }
 ```
+可信算子都发布在公开区块链上，以形成链下资产的计算规范。在之后的工作中，我们将考虑tensor级别的算子。
 
-Leaf DDO的示意, 叶子资产可通过可信算子模版来定义其资产服务：
+### Leaf DDO的示意
+
+叶子资产可通过可信算子模版来定义其资产服务：
 ```
 metadata = {'main': {'type': 'Dataset', 'name': 'leaf data1'}}
 service = {
@@ -68,7 +71,9 @@ service = {
 }
 ```
 
-Composable DDO的示意，组合资产可通过分布式工作流来定义，逐步满足子资产的约束条件：
+### Composable DDO的示意
+
+组合资产可通过分布式工作流来定义，逐步满足子资产的约束条件：
 ```
 metadata = {'main': {'type': 'Dataset', 'name': 'aggregated dataset'}}
 child_dts = [
