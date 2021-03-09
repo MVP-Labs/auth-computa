@@ -2,8 +2,6 @@
 
 [中文版](./README_CN.md)
 
-## Overview
-
 This project implements a new service schema for defining off-chain assets, including: 1) datatoken helper; 2) asset ddo generator; 3) templated operator; 4) service descriptor; 5) cross-domain workflow; 6) agreement and fulfillment; 7) decentralized storage provider.
 
 ## Highlights
