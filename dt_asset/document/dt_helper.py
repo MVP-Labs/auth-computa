@@ -59,7 +59,7 @@ class DTHelper:
         """
         Return an Ownership dt to it's correspondng hex id in bytes.
 
-        So dt:op:<hex>, will return <hex> in byte format
+        So dt:ownership:<hex>, will return <hex> in byte format
         """
         if isinstance(dt, str):
             if re.match('^[0x]?[0-9A-Za-z]+$', dt):

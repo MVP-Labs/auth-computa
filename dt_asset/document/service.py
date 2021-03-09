@@ -74,7 +74,7 @@ class Service:
         return _index, _endpoint, _descriptor, _attributes
 
     def validate(self, asset_type, child_dts):
-        """Validator of the metadata composition
+        """Validator of the service composition
 
         :param asset_type: str
         :param child_dts: list
