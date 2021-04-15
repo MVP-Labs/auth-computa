@@ -1,0 +1,14 @@
+{
+  "self_id": "abc",
+  "addr_dict": {
+    "abc": "111.111.111.111:12020/12021"
+  },
+  "input_data": [],
+  "output_data": "out.txt",
+  "executor": "base",
+  "before_exec": ["hello"],
+  "after_exec": ["hello"],
+  "extra_paras": {
+    "learning_rate": 0.01
+  }
+}

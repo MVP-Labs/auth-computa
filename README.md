@@ -1,110 +1,61 @@
-# dt-asset
+# ExecutorCommon
 
-[中文版](./README_CN.md)
+## Executor
 
-This project implements a new service schema for defining off-chain assets, including: 1) datatoken helper; 2) asset ddo generator; 3) templated operator; 4) service descriptor; 5) cross-domain workflow; 6) agreement and fulfillment; 7) decentralized storage provider.
+任务执行者，对具体的框架进行抽象，实现以下功能：
 
-## Highlights
+* 统一的接口，使得开发者可以直接配置网络端口、读写数据，保证代码符合规定，而不出现自己写读取文件代码（`pd.read_csv("...")`）以及初始化端口等出现权限错误。
+* 对具体框架的运行流程进行切分
 
-Our goal is to allow data owners to quickly define data services with trusted on-chain operators (e.g., download, mpc_add, encrypt). The associated metadata is stored in the decentralized storage networks (e.g., Filecoin), which is trusted and immutable. The outputs of each data service can be chained hierarchically, formalizing all related operators as a traceable workflow. When these components are combined, off-chain trusted computation becomes a reality. You can consider the decentralized storage as the tape of Turing machine and the on-chain operators as the instruction set.
+变量
 
-We are building more on-chain operators with privacy-preserving capabilities ([Compute-to-Data](https://github.com/ownership-labs/Compute-to-Data) provides an example). Then it becomes trusted private computation. When you define services of sensitive data assets, you don't need to worry about the privacy leakage. This is because the computation will never be triggered by undefined or privacy-leaking operators. Ultimatelly, the data assets can be defined once but sold mutiple times.
+- comm：通讯模块
+- stage_manager：
+- ops：字典，表明可以调用的操作
 
-## Play With It
+### StageManager
 
-```
-$ git clone https://github.com/ownership-labs/dt-asset
-$ cd dt-asset
-$ export PYTHONPATH=$PYTHONPATH:"../dt-asset"
-$ pip install -r requirements.txt
-$ python tests/test.py
-```
+实现以下功能：
 
-## Trusted Workflow
+* 远程的executor之间互相同步
+* 通过GRPC接口供本地查询当前Executor状态
 
-Our system enables hierarchical composable assets, with cross-domain distributed workflows built-in. The high-level asset is required to fulfill service terms and constraints of the lower ones, such as selected operators and parameters. Partial constraint satisfaction is also permitted, which means any middle-level CDT/DDO or leaf DT/DDO do not need to satisfy all constraints. Only the top-level algorithm CDT/DDO should fulfill all requirements, since it triggers the actual computation. With such a design, we hope to attract more traders/scientists to find the optimal parameters based on the historical information of data marketplaces, thus enabling Autonomous Economic Agents (AEAs).
+GRPC接口：
 
-### trusted operator and constraint：
+* GetStatus：获取当前状态（未开始=0，运行中=1，完成=2，错误=3，准备退出=4）
+* GetStage：获取当前任务阶段，用于Executor之间同步
+* CallExit：当任务完成后，Executor等待该指令；接收到该指令之后再退出。
 
-add operator:
-```
-import json
-import argparse
+## 配置文件config.json
 
-if __name__ == '__main__':
-    print('hello world, data token')
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True)
-
-    args = parser.parse_args()
-    op_args = json.load(open(args.config))
-
-    print(op_args['arg1'] + op_args['arg2'])
-```
-
-params.json:
-```
+```python
 {
-    "arg1": {},
-    "arg2": {}
+  "self_id": "abc",
+  # 字符串，表示当前Executor的id
+
+  "addr_dict": {
+    "abc": "127.0.0.1:8001/8002",
+    "def": "127.0.0.1:8003/8004",
+    "ghi": "127.0.0.1:8005/8006"
+  },
+  # 参与计算环节的其他Executor的ID-地址映射，其中第1个端口是Executor自身通讯使用，第2个端口则是具体调用的程序所需的接口（比如Crypten自身接口）
+    
+
+  "input_data": [],
+  "output_data": [],
+  # 输入，输出文件的路径
+
+  "executor": "base",
+  # 调用哪个Executor的实例（如 Crypten，PS3I）
+
+  "before_exec": ["hello"],
+  "after_exec": ["hello"],
+  # 运行脚本代码之前和之后需要执行的操作
+  
+  "extra_paras": {
+    "learning_rate": 0.01
+  }
+  # 其他可能需要的参数
 }
 ```
-Trusted operators are published on the blockchain, and then can be used to define services of data assets. In the later work, we will consider tensor-level operators.
 
-### example of leaf DDO
-
-A leaf asset can be defined by incorporating the template id of operators.
-```
-metadata = {'main': {'type': 'Dataset', 'name': 'leaf data1'}}
-service = {
-    'index': 'sid_for_leaf1',
-    'endpoint': 'ip:port',
-    'descriptor': {
-        'template': 'dt:ownership:xxx...' # tid for add-op,
-        'constraint': {
-            'arg1': 1,
-            'arg2': {}
-        }
-    },
-    'attributes': {
-        'price': 10
-    }
-}
-```
-
-### example of composable DDO
-
-Leaf data assets can be aggregated as a data union. You need to use the workflow structure and satisfy the constraints of leaf assets.
-```
-metadata = {'main': {'type': 'Dataset', 'name': 'aggregated dataset'}}
-child_dts = [
-    'dt:ownership:xxx...dt1',  # for leaf_ddo1.dt
-    'dt:ownership:xxx...dt2'   # for leaf_ddo2.dt
-]
-service = {
-    'index': 'sid_for_cdt1',
-    'endpoint': 'ip:port',
-    'descriptor': {
-        'workflow': {
-            'dt:ownership:xxx...dt1': {
-                'service': 'sid_for_leaf1',
-                'constraint': {
-                    'arg1': 1,
-                    'arg2': {}
-                }
-            },
-            'dt:ownership:xxx...dt2': {
-                'service': 'sid1_for_leaf2',
-                'constraint': {
-                    'arg1': {},
-                    'arg2': 2
-                }
-            }
-        }
-    },
-    'attributes': {
-        'price': 30
-    }
-}
-```
