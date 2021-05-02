@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+// python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. exec_state.proto
+message StageQuery {
+
+}
+
+message Stage {
+  int32 stage = 1;
+}
+
+message StatusQuery {
+
+}
+
+message Status {
+  int32 status = 1;
+}
+
+message ExitCall {
+
+}
+
+message ExitResult {
+  int32 res = 1;
+}
+
+service ExecComm {
+  rpc GetStage(StageQuery) returns (Stage) {}
+  rpc GetStatus(StatusQuery) returns (Status) {}
+  rpc CallExit(ExitCall) returns (ExitResult) {}
+}
